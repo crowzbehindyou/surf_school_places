@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:surf_school/models/place.dart';
+import 'package:surf_school/repositories/models/place.dart';
 
 enum PlaceCardType { place, favorite }
 
@@ -34,7 +34,7 @@ class PlaceCardWidget extends StatelessWidget {
                       width: double.infinity,
                       height: _imageHeight,
                       child: Image.network(
-                        place.images.first,
+                        place.images,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) =>
                             Container(color: Colors.red),
