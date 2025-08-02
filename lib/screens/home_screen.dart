@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:surf_school/models/place.dart';
+import 'package:surf_school/repositories/places_repository.dart';
 import 'package:surf_school/widgets/place_card_widget.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({required this.places, super.key});
   final List<Place> places;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          PlacesRepository().getPlacesList();
+        },
+        child: Icon(Icons.telegram),
+      ),
       appBar: AppBar(title: const Text('Surf Places'), centerTitle: true),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: places.length,
+        itemCount: widget.places.length,
         itemBuilder: (context, index) {
-          final place = places[index];
+          final place = widget.places[index];
           return PlaceCardWidget(
             place: place,
             onCardTap: () {
@@ -43,5 +56,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-
