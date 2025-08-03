@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:surf_school/repositories/models/place.dart';
-import 'package:surf_school/repositories/places_repository.dart';
+import 'package:surf_school/features/bloc/places_list_bloc.dart';
+import 'package:surf_school/repositories/abstract_places_repository.dart';
 import 'package:surf_school/widgets/place_card_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-  
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Place>? _placesList;
+  final PlacesListBloc _placesListBloc = PlacesListBloc(
+    GetIt.I<AbstractPlacesRepository>(),
+  );
   @override
   void initState() {
-    _loadPlacesList();
+    _placesListBloc.add(LoadPlacesList());
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Surf Places'), centerTitle: true),
-      body: _placesList == null
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.separated(
+      body: BlocBuilder<PlacesListBloc, PlacesListState>(
+        bloc: _placesListBloc,
+        builder: (context, state) {
+          if (state is PlacesListLoaded) {
+            return ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: _placesList!.length,
+              itemCount: state.placesList.length,
               itemBuilder: (context, index) {
-                final place = _placesList![index];
+                final place = state.placesList[index];
                 return PlaceCardWidget(
                   place: place,
                   onCardTap: () {
@@ -47,7 +52,16 @@ class _HomeScreenState extends State<HomeScreen> {
               separatorBuilder: (_, __) => const SizedBox(
                 height: 16,
               ),
-            ),
+            );
+          }
+          if (state is PlacesListLoadingFailed) {
+            return Center(
+              child: Text(state.exception?.toString() ?? 'Exception'),
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.place_outlined), label: 'Места'),
@@ -57,10 +71,5 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (_) {},
       ),
     );
-  }
-
-  Future<void> _loadPlacesList() async {
-    _placesList = await GetIt.I<PlacesRepository>().getPlacesList();
-    setState(() {});
   }
 }
